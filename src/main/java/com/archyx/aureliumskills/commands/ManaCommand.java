@@ -8,6 +8,7 @@ import com.archyx.aureliumskills.configuration.OptionL;
 import com.archyx.aureliumskills.data.PlayerData;
 import com.archyx.aureliumskills.lang.CommandMessage;
 import com.archyx.aureliumskills.lang.Lang;
+import com.archyx.aureliumskills.stats.Stats;
 import com.archyx.aureliumskills.util.math.NumberUtil;
 import com.archyx.aureliumskills.util.text.TextUtil;
 import org.bukkit.command.CommandSender;
@@ -162,6 +163,54 @@ public class ManaCommand extends BaseCommand {
                                 , "{player}", player.getName()));
                     }
                 }
+            }
+        } else {
+            if (!silent) {
+                sender.sendMessage(AureliumSkills.getPrefix(locale) + Lang.getMessage(CommandMessage.MANA_AT_LEAST_ZERO, locale));
+            }
+        }
+    }
+
+    @Subcommand("setmax")
+    @CommandPermission("aureliumskills.mana.setmax")
+    @CommandCompletion("@players @nothing false|true")
+    @Description("Sets the mana of player")
+    public void onMaxManaSet(CommandSender sender, @Flags("other") Player player, double amount, @Default("true") boolean allowOverMax, @Default("false") boolean silent) {
+        PlayerData playerData = plugin.getPlayerManager().getPlayerData(player);
+        playerData.setStatLevel(Stats.WISDOM, -OptionL.getDouble(Option.BASE_MANA) + amount);
+        if (playerData == null) return;
+        Locale locale = playerData.getLocale();
+        if (amount >= 0) {
+            if (!(allowOverMax && OptionL.getBoolean(Option.WISDOM_ALLOW_OVER_MAX_MANA)))
+                if (amount <= playerData.getMana()) {
+                    playerData.setMana(playerData.getMaxMana());
+
+                }
+            if (!silent) {
+                sender.sendMessage(AureliumSkills.getPrefix(locale) + TextUtil.replace(Lang.getMessage(CommandMessage.MANA_SET, locale)
+                        , "{amount}", NumberUtil.format2(playerData.getMaxMana())
+                        , "{player}", player.getName()));
+            }
+        } else {
+            if (!silent) {
+                sender.sendMessage(AureliumSkills.getPrefix(locale) + Lang.getMessage(CommandMessage.MANA_AT_LEAST_ZERO, locale));
+            }
+        }
+    }
+    @Subcommand("addmax")
+    @CommandPermission("aureliumskills.mana.setmax")
+    @CommandCompletion("@players @nothing false|true")
+    @Description("Sets the mana of player")
+    public void onMaxManaAdd(CommandSender sender, @Flags("other") Player player, double amount, @Default("true") boolean allowOverMax, @Default("false") boolean silent) {
+        PlayerData playerData = plugin.getPlayerManager().getPlayerData(player);
+        playerData.setStatLevel(Stats.WISDOM, -OptionL.getDouble(Option.BASE_MANA) + (playerData.getMaxMana() + amount));
+        if (playerData == null) return;
+        Locale locale = playerData.getLocale();
+        if (amount >= 0) {
+            if (!silent) {
+                sender.sendMessage(AureliumSkills.getPrefix(locale) + TextUtil.replace(Lang.getMessage(CommandMessage.MANA_ADD, locale)
+                        , "{amount}", NumberUtil.format2(playerData.getMaxMana())
+                        , "{player}", player.getName()));
             }
         } else {
             if (!silent) {
